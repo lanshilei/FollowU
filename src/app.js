@@ -13,15 +13,15 @@ class App extends Component {
 
   config = {
     pages: [
-      'pages/personal/personal',
-      'pages/square/square'
+      'pages/square/square',
+      'pages/personal/personal'
     ],
     window: {
       backgroundTextStyle: 'light',
       navigationBarBackgroundColor: '#fff',
       navigationBarTitleText: 'WeChat',
       navigationBarTextStyle: 'black'
-    }, 
+    },
     tabBar: {
       color: "#929292",
       selectedColor: "#2C2C2C",
