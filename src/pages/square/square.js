@@ -74,7 +74,11 @@ export default class Square extends Component {
         <View className="float-view">
           <Button>发起</Button>
         </View>
-        <Text className="title-text">融资速递：WarDucks完成A轮融资</Text>
+        <Text className='title-text' onClick={ () => {
+          Taro.navigateTo({
+          url: '/pages/detail/detail'
+        })
+        } }>融资速递：WarDucks完成A轮融资</Text>
         <Swiper
           className="swipe"
           indicatorColor="#999"
