@@ -3,7 +3,7 @@ import { View, Text } from '@tarojs/components'
 import { AtGrid } from 'taro-ui'
 import './detail.scss'
 
-export default class Square extends Component {
+export default class Detail extends Component {
 
   config = {
     navigationBarTitleText: '详情'

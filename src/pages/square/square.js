@@ -8,6 +8,7 @@ import {
   SwiperItem,
   Button,
 } from '@tarojs/components';
+import { AtFab } from 'taro-ui'
 import './square.scss';
 
 const labelText = [
@@ -72,7 +73,13 @@ export default class Square extends Component {
     return (
       <View className="square">
         <View className="float-view">
-          <Button>发起</Button>
+          <AtFab onClick={ () => {
+            Taro.navigateTo({
+              url: '/pages/create/create'
+            })
+          } }>
+            <Text className='at-fab__icon at-icon at-icon-add'/>
+          </AtFab>
         </View>
         <Text className='title-text' onClick={ () => {
           Taro.navigateTo({

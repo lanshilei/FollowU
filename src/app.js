@@ -16,7 +16,8 @@ class App extends Component {
     pages: [
       'pages/square/square',
       'pages/personal/personal',
-      'pages/detail/detail'
+      'pages/detail/detail',
+      'pages/create/create'
     ],
     window: {
       backgroundTextStyle: 'light',
