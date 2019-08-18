@@ -15,7 +15,9 @@ export default class Create extends Component {
       minPeople: 1, 
       maxPeople: 1,
       startDateSel: '2019-07-21',
-      endDateSel: '2019-07-21'
+      startTimeSel: '14:00',
+      endDateSel: '2019-07-21',
+      endTimeSel: '18:00'
     }
   }
 
@@ -34,10 +36,20 @@ export default class Create extends Component {
         startDateSel: e.detail.value
     })
   }
+  onStartTimeChange = e => {
+      this.setState({
+          startTimeSel: e.detail.value
+      })
+  }
   onEndDateChange = e => {
     this.setState({
         endDateSel: e.detail.value
     })
+  }
+  onEndTimeChange = e => {
+      this.setState({
+          endTimeSel: e.detail.value
+      })
   }
 
   componentWillMount () { }
@@ -99,6 +111,13 @@ export default class Create extends Component {
                             {this.state.startDateSel}
                         </View>
                     </Picker>
+                    <Picker className='event-prop-value'
+                        mode='time' 
+                        onChange={this.onStartTimeChange}>
+                        <View className='picker'>
+                            {this.state.startTimeSel}
+                        </View>
+                    </Picker>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
@@ -108,6 +127,13 @@ export default class Create extends Component {
                         onChange={this.onEndDateChange}>
                         <View className='picker'>
                             {this.state.endDateSel}
+                        </View>
+                    </Picker>
+                    <Picker className='event-prop-value'
+                        mode='time' 
+                        onChange={this.onEndTimeChange}>
+                        <View className='picker'>
+                            {this.state.endTimeSel}
                         </View>
                     </Picker>
                 </View>
