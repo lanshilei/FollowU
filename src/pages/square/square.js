@@ -6,9 +6,9 @@ import {
   ScrollView,
   Swiper,
   SwiperItem,
-  Button,
+  Picker,
 } from '@tarojs/components';
-import { AtFab } from 'taro-ui'
+import { AtFab } from 'taro-ui';
 import './square.scss';
 
 const labelText = [
@@ -34,6 +34,10 @@ export default class Square extends Component {
 
   state = {
     checkLabel: 0,
+    selectArea: ['大连理工', '大连地区', '北京地区'],
+    areaChecked: '大连理工',
+    selectAttention: ['全部', '只看关注', '只看男生', '只看女生'],
+    attentionChecked: '全部',
   };
 
   componentWillMount() {}
@@ -52,6 +56,18 @@ export default class Square extends Component {
 
   onScroll(e) {
     console.log(e.detail);
+  }
+
+  onAreaChange = e => {
+    this.setState({
+      areaChecked: this.state.selectArea[e.detail.value],
+    });
+  };
+
+  onAttentionChange = e => {
+    this.setState({
+      attentionChecked: this.state.selectAttention[e.detail.value],
+    });
   }
 
   render() {
@@ -73,19 +89,26 @@ export default class Square extends Component {
     return (
       <View className="square">
         <View className="float-view">
-          <AtFab onClick={ () => {
-            Taro.navigateTo({
-              url: '/pages/create/create'
-            })
-          } }>
-            <Text className='at-fab__icon at-icon at-icon-add'/>
+          <AtFab
+            onClick={() => {
+              Taro.navigateTo({
+                url: '/pages/create/create',
+              });
+            }}
+          >
+            <Text className="at-fab__icon at-icon at-icon-add" />
           </AtFab>
         </View>
-        <Text className='title-text' onClick={ () => {
-          Taro.navigateTo({
-          url: '/pages/detail/detail'
-        })
-        } }>融资速递：WarDucks完成A轮融资</Text>
+        <Text
+          className="title-text"
+          onClick={() => {
+            Taro.navigateTo({
+              url: '/pages/detail/detail',
+            });
+          }}
+        >
+          融资速递：WarDucks完成A轮融资
+        </Text>
         <Swiper
           className="swipe"
           indicatorColor="#999"
@@ -114,6 +137,29 @@ export default class Square extends Component {
             />
           </SwiperItem>
         </Swiper>
+
+        <View className="picker-view">
+          <Picker
+            mode="selector"
+            range={this.state.selectArea}
+            onChange={this.onAreaChange}
+          >
+            <View className="square-picker">
+              地区：{this.state.areaChecked}
+            </View>
+          </Picker>
+
+          <Picker
+            mode="selector"
+            range={this.state.selectAttention}
+            onChange={this.onAttentionChange}
+          >
+            <View className="square-picker">
+              关注：{this.state.attentionChecked}
+            </View>
+          </Picker>
+        </View>
+
         <ScrollView
           className="scrollTitle"
           scrollX

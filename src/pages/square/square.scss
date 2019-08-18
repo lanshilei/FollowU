@@ -80,3 +80,13 @@
     align-items: center;
     justify-content: center;
 }
+.picker-view {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    background-color: bisque;
+}
+.square-picker {
+    font-size: 25px;
+}
