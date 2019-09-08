@@ -15,10 +15,10 @@ const post = (url, needLogin, data) => {
 const request = (params, method = 'GET') => {
     let { url, data, needLogin } = params
     let token = getGlobalData(KEY_TOKEN)
-    let contentType = 'application/json'
+    let contentType = 'application/x-www-form-urlencoded'
     let header = {}
     if (needLogin) {
-        header = { 'content-type': contentType, 'token': token }
+        header = { 'content-type': contentType, 'authorization': token }
     } else {
         header = { 'content-type': contentType }
     }

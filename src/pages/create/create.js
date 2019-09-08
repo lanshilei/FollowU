@@ -1,6 +1,7 @@
 import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
+import { post } from '../../http/api'
 import './create.scss'
 
 export default class Create extends Component {
@@ -12,6 +13,8 @@ export default class Create extends Component {
   constructor () {
     super(...arguments)
     this.state = {
+      title: '',
+      place: '',
       minPeople: 1, 
       maxPeople: 1,
       startDateSel: '2019-07-21',
@@ -21,35 +24,70 @@ export default class Create extends Component {
     }
   }
 
-  handleMinChange (value) {
+  onTitleChange = (value) => {
     this.setState({
-        minPeople: value
+      title: value
     })
   }
-  handleMaxChange (value) {
+  onPlaceChange = (value) => {
     this.setState({
-        maxPeople: value
+      place: value
+    })
+  }
+  onMinChange = (value) => {
+    this.setState({
+      minPeople: value
+    })
+  }
+  onMaxChange = (value) => {
+    this.setState({
+      maxPeople: value
     })
   }
   onStartDateChange = e => {
     this.setState({
-        startDateSel: e.detail.value
+      startDateSel: e.detail.value
     })
   }
   onStartTimeChange = e => {
-      this.setState({
-          startTimeSel: e.detail.value
-      })
+    this.setState({
+      startTimeSel: e.detail.value
+    })
   }
   onEndDateChange = e => {
     this.setState({
-        endDateSel: e.detail.value
+      endDateSel: e.detail.value
     })
   }
   onEndTimeChange = e => {
-      this.setState({
-          endTimeSel: e.detail.value
-      })
+    this.setState({
+      endTimeSel: e.detail.value
+    })
+  }
+  onRemarkChange = (value) => {
+    this.setState({
+      remark: value
+    })
+  }
+  onSubmitForm = e => {
+    post("/event/save", true, {
+        title: this.state.title,
+        destination: this.state.place,
+        maxUserNum: this.state.maxPeople,
+        minUserNum: this.state.minPeople,
+        startTime: this.getTimeInMillis(this.state.startDateSel, this.state.startTimeSel),
+        endTime: this.getTimeInMillis(this.state.endDateSel, this.state.endTimeSel),
+        remarks: this.state.remark,
+        type: 0
+    }).then((result) => {
+        console.log("publish success: " + result)
+    }).catch((error) => {
+        console.error("publish error: " + error)
+    })
+  }
+
+  getTimeInMillis = (data, time) => {
+      return 1537326774000
   }
 
   componentWillMount () { }
@@ -72,34 +110,36 @@ export default class Create extends Component {
                     <AtInput className='event-prop-value'
                         border={false}
                         maxLength='15' 
-                        placeholder='不超过15个字符'/>
+                        placeholder='不超过15个字符'
+                        onChange={this.onTitleChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
                     <Text className='event-prop-key'>地点</Text>
                     <AtInput className='event-prop-value'
                         border={false}
-                        placeholder='请输入活动地点'/>
+                        placeholder='请输入活动地点'
+                        onChange={this.onPlaceChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
                     <Text className='event-prop-key'>最低人数</Text>
                     <AtInputNumber className='event-prop-value'
-                        value={this.state.minValue}
+                        value={this.state.minPeople}
                         min={0}
                         max={100}
                         step={1}
-                        onChange={this.handleMinChange.bind(this)}/>
+                        onChange={this.onMinChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
                     <Text className='event-prop-key'>最高人数</Text>
                     <AtInputNumber className='event-prop-value'
-                        value={this.state.maxValue}
+                        value={this.state.maxPeople}
                         min={0}
                         max={100}
                         step={1}
-                        onChange={this.handleMaxChange.bind(this)}/>
+                        onChange={this.onMaxChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
@@ -149,12 +189,14 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>留言</Text>
                     <AtInput className='event-prop-value'
                         border={false}
-                        placeholder='说点什么吧...'/>
+                        placeholder='说点什么吧...'
+                        onChange={this.onRemarkChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>
 
                 <AtButton className='btn_submit'
                     type='primary'
+                    onClick={this.onSubmitForm.bind(this)}
                 >提交</AtButton>
             </View>
         </View>
