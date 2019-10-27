@@ -14,11 +14,17 @@ export default class Create extends Component {
   constructor () {
     super(...arguments)
     let current = new Date()
-    let date = formatDate(current)
-    let time = formatTime(current)
+    let oneHourLate = new Date(current.getTime() + 1000 * 60 * 60)
+    let date = formatDate(oneHourLate)
+    let time = formatTime(oneHourLate)
+    let minDeadline = new Date(this.computeDeadlineScope(oneHourLate.getTime()))
+    let minDate = formatDate(minDeadline)
+    let minTime = formatTime(minDeadline)
     this.state = {
       typeSelector: ['全部', '休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
       scopeSelector: ['全部可见', '同校可见', '同校不可见'], 
+      minDeadlineDate: minDate,
+      minDeadlineTime: minTime,
       typeSel: 0, 
       title: '',
       place: '',
@@ -29,8 +35,8 @@ export default class Create extends Component {
       startTimeSel: time,
       endDateSel: date,
       endTimeSel: time,
-      deadlineDateSel: date,
-      deadlineTimeSel: time,
+      deadlineDateSel: minDate,
+      deadlineTimeSel: minTime,
       wxNum: '',
       remark: ''
     }
@@ -67,13 +73,39 @@ export default class Create extends Component {
     })
   }
   onStartDateChange = e => {
+    var minDeadline = new Date(this.computeDeadlineScope(getTimeInMills(e.detail.value, this.state.startTimeSel)))
+    var minDate = formatDate(minDeadline)
+    var minTime = formatTime(minDeadline)
+    var currentDeadlineDate = this.state.deadlineDateSel
+    var currentDeadlineTime = this.state.deadlineTimeSel
+    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) < minDeadline) {
+      currentDeadlineDate = minDate
+      currentDeadlineTime = minTime
+    }
     this.setState({
-      startDateSel: e.detail.value
+      startDateSel: e.detail.value, 
+      minDeadlineDate: minDate, 
+      minDeadlineTime: minTime,
+      deadlineDateSel: currentDeadlineDate, 
+      deadlineTimeSel: currentDeadlineTime
     })
   }
   onStartTimeChange = e => {
+    var minDeadline = new Date(this.computeDeadlineScope(getTimeInMills(this.state.startDateSel, e.detail.value)))
+    var minDate = formatDate(minDeadline)
+    var minTime = formatTime(minDeadline)
+    var currentDeadlineDate = this.state.deadlineDateSel
+    var currentDeadlineTime = this.state.deadlineTimeSel
+    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) < minDeadline) {
+      currentDeadlineDate = minDate
+      currentDeadlineTime = minTime
+    }
     this.setState({
-      startTimeSel: e.detail.value
+      startTimeSel: e.detail.value, 
+      minDeadlineDate: minDate,
+      minDeadlineTime: minTime, 
+      deadlineDateSel: currentDeadlineDate,
+      deadlineTimeSel: currentDeadlineTime
     })
   }
   onEndDateChange = e => {
@@ -117,6 +149,7 @@ export default class Create extends Component {
         minUserNum: this.state.minPeople,
         startTime: getTimeInMills(this.state.startDateSel, this.state.startTimeSel),
         endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
+        registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
         remarks: this.state.remark,
         type: this.state.typeSel, 
         scope: this.state.scopeSel
@@ -153,6 +186,38 @@ export default class Create extends Component {
       })
     }
     return pass;
+  }
+
+  computeDeadlineScope = (startTime) => {
+    let currentTime = new Date().getTime()
+    let derta = startTime - currentTime
+    let hour = 1000 * 60 * 60
+    if (derta < hour) {
+      return startTime
+    } else if (derta >= hour && derta <= 2 * hour) {
+      return startTime - 0.5 * hour
+    } else if (derta > 2 * hour && derta <= 3 * hour) {
+      return startTime - 0.75 * hour
+    } else if (derta > 3 * hour && derta <= 4 * hour) {
+      return startTime - 1 * hour
+    } else if (derta > 4 * hour && derta <= 5 * hour) {
+      return startTime - 1.5 * hour
+    } else if (derta > 5 * hour && derta <= 6 * hour) {
+      return startTime - 2 * hour
+    } else if (derta > 6 * hour && derta <= 7 * hour) {
+      return startTime - 2.5 * hour
+    } else if (derta > 7 * hour && derta <= 16 * hour) {
+      return startTime - 3 * hour
+    } else if (derta > 16 * hour && derta <= 24 * hour) {
+      return startTime - 4 * hour
+    } else {
+      let n = 12
+      let i = 2
+      while (!(derta > i * n * hour && derta <= (i + 1) * n * hour)) {
+        i++
+      }
+      return startTime - (2 + i * 2) * hour
+    }
   }
 
   componentWillMount () { }
@@ -235,6 +300,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>开始时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
+                        value={this.state.startDateSel}
                         onChange={this.onStartDateChange}>
                         <View className='picker'>
                             {this.state.startDateSel}
@@ -242,6 +308,7 @@ export default class Create extends Component {
                     </Picker>
                     <Picker className='event-prop-value'
                         mode='time' 
+                        value={this.state.startTimeSel}
                         onChange={this.onStartTimeChange}>
                         <View className='picker'>
                             {this.state.startTimeSel}
@@ -253,6 +320,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>结束时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
+                        value={this.state.endDateSel}
                         onChange={this.onEndDateChange}>
                         <View className='picker'>
                             {this.state.endDateSel}
@@ -260,6 +328,7 @@ export default class Create extends Component {
                     </Picker>
                     <Picker className='event-prop-value'
                         mode='time' 
+                        value={this.state.endTimeSel}
                         onChange={this.onEndTimeChange}>
                         <View className='picker'>
                             {this.state.endTimeSel}
@@ -271,6 +340,8 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>截止时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
+                        start={this.state.minDeadlineDate}
+                        value={this.state.deadlineDateSel}
                         onChange={this.onDeadlineDateChange}>
                         <View className='picker'>
                             {this.state.deadlineDateSel}
@@ -278,6 +349,8 @@ export default class Create extends Component {
                     </Picker>
                     <Picker className='event-prop-value'
                         mode='time' 
+                        start={this.state.minDeadlineTime}
+                        value={this.state.deadlineTimeSel}
                         onChange={this.onDeadlineTimeChange}>
                         <View className='picker'>
                             {this.state.deadlineTimeSel}
