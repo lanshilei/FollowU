@@ -42,6 +42,11 @@ class App extends Component {
         iconPath: "images/personal.png",
         selectedIconPath: "images/personal_selected.png"
       }]
+    },
+    permission: {
+      "scope.userLocation": {
+        "desc": "你的位置信息将用于小程序位置接口的效果展示"
+      }
     }
   }
 

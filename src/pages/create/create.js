@@ -2,7 +2,7 @@ import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
 import { post } from '../../http/api'
-import { formatDate, formatTime, getTimeInMills } from '../../utils/util'
+import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/util'
 import './create.scss'
 
 export default class Create extends Component {
@@ -21,13 +21,15 @@ export default class Create extends Component {
     let minDate = formatDate(minDeadline)
     let minTime = formatTime(minDeadline)
     this.state = {
-      typeSelector: ['全部', '休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
-      scopeSelector: ['全部可见', '同校可见', '同校不可见'], 
+      typeSelector: ['休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
+      scopeSelector: ['全部可见', '仅同校可见', '除同校外可见'], 
       minDeadlineDate: minDate,
       minDeadlineTime: minTime,
       typeSel: 0, 
       title: '',
       place: '',
+      latitude: -1, 
+      longitude: -1,
       scopeSel: 0,
       minPeople: 1, 
       maxPeople: 1,
@@ -138,6 +140,62 @@ export default class Create extends Component {
       remark: value
     })
   }
+  onChooseLocation = e => {
+    Taro.getSetting().then((settings) => {
+      if (settings.authSetting['scope.userLocation'] == undefined) {
+        // 还未请求过授权，询问授权
+        Taro.authorize({
+          scope: 'scope.userLocation'
+        }).then(() => {
+          this.openMap()
+        }).catch(() => {
+          Taro.showToast({
+            title: '授权失败',
+            icon: 'none'
+          })
+        })
+      } else if (settings.authSetting['scope.userLocation'] == true) {
+        // 已经授权，打开地图
+        this.openMap()
+      } else if (settings.authSetting['scope.userLocation'] == false) {
+        // 已经拒绝授权，引导进入设置页
+        Taro.showModal({
+          title: '提示', 
+          content: '无法获取定位权限，请前往小程序设置界面授权定位服务'
+        }).then(call => {
+          if (call.confirm) {
+            Taro.openSetting().then(res => {
+              if (res.authSetting['scope.userLocation']) {
+                this.openMap()
+              } else {
+                Taro.showToast({
+                  title: '授权失败',
+                  icon: 'none'
+                })
+              }
+            }) 
+          }
+        })
+      }
+    })
+  }
+  openMap = () => {
+    let params = {}
+    if (this.state.latitude != -1 && this.state.longitude != -1) {
+      params = {
+        latitude: this.state.latitude, 
+        longitude: this.state.longitude
+      }
+    }
+    Taro.chooseLocation(params).then((result) => {
+      this.setState({
+        place: result.name, 
+        latitude: result.latitude, 
+        longitude: result.longitude
+      })
+    })
+  }
+
   onSubmitForm = e => {
     if (!this.checkParams()) {
       return;
@@ -169,7 +227,7 @@ export default class Create extends Component {
       errorMsg = '地点是必填项！'
     } else if (this.state.maxPeople < this.state.minPeople) {
       errorMsg = '最高人数不能低于最低人数！'
-    } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) - new Date().getTime() < 60 * 60 * 1000) {
+    } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) - getCurrentTimeInMills() < 60 * 60 * 1000) {
       errorMsg = '开始时间至少要比当前时间晚一个小时！'
     } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) > getTimeInMills(this.state.endDateSel, this.state.endTimeSel)) {
       errorMsg = '结束时间不能早于开始时间！'
@@ -236,7 +294,7 @@ export default class Create extends Component {
             <Text className='title-text'>发起一个事件：</Text>
             <View className='event-layout'>
                 <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>类型</Text>
+                    <Text className='event-prop-key'>事件标签</Text>
                     <Picker className='event-prop-value'
                         mode='selector' 
                         range={this.state.typeSelector}
@@ -257,11 +315,15 @@ export default class Create extends Component {
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>地点</Text>
-                    <AtInput className='event-prop-value'
-                        border={false}
+                    <Text className='event-prop-key'>活动地点</Text>
+                    <View onClick={this.onChooseLocation.bind(this)}>
+                      <AtInput className='event-prop-value'
                         placeholder='请输入活动地点'
+                        border={false}
+                        editable={false}
+                        value={this.state.place}
                         onChange={this.onPlaceChange.bind(this)}/>
+                    </View>
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
@@ -297,7 +359,7 @@ export default class Create extends Component {
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>开始时间</Text>
+                    <Text className='event-prop-key'>活动开始时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
                         value={this.state.startDateSel}
@@ -317,7 +379,7 @@ export default class Create extends Component {
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>结束时间</Text>
+                    <Text className='event-prop-key'>活动结束时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
                         value={this.state.endDateSel}
@@ -337,7 +399,7 @@ export default class Create extends Component {
                 </View>
                 <View className='prop-divide-line'/>
                 <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>截止时间</Text>
+                    <Text className='event-prop-key'>报名截止时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
                         start={this.state.minDeadlineDate}
@@ -370,7 +432,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>留言</Text>
                     <AtInput className='event-prop-value'
                         border={false}
-                        placeholder='说点什么吧...'
+                        placeholder='请简短介绍这个事件来吸引大家参与吧'
                         onChange={this.onRemarkChange.bind(this)}/>
                 </View>
                 <View className='prop-divide-line'/>

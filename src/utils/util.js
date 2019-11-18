@@ -37,7 +37,15 @@ export function formatDateTime(date, withMs = false) {
 export function getTimeInMills(date, time) {
   let params = date + ' ' + time + ':00'
   let dateTime = new Date(params)
+  // 抹掉seconds和millseconds
+  dateTime.setSeconds(0, 0)
   return dateTime.getTime()
+}
+
+export function getCurrentTimeInMills() {
+  let currentTime =  new Date()
+  currentTime.setSeconds(0, 0)
+  return currentTime.getTime()
 }
 
 function formatLeadingZeroNumber(n, digitNum = 2) {
