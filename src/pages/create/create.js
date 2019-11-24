@@ -17,14 +17,14 @@ export default class Create extends Component {
     let oneHourLate = new Date(current.getTime() + 1000 * 60 * 60)
     let date = formatDate(oneHourLate)
     let time = formatTime(oneHourLate)
-    let minDeadline = new Date(this.computeDeadlineScope(oneHourLate.getTime()))
-    let minDate = formatDate(minDeadline)
-    let minTime = formatTime(minDeadline)
+    let maxDeadline = new Date(this.computeDeadlineScope(oneHourLate.getTime()))
+    let maxDate = formatDate(maxDeadline)
+    let maxTime = formatTime(maxDeadline)
     this.state = {
       typeSelector: ['休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
       scopeSelector: ['全部可见', '仅同校可见', '除同校外可见'], 
-      minDeadlineDate: minDate,
-      minDeadlineTime: minTime,
+      maxDeadlineDate: maxDate,
+      maxDeadlineTime: maxTime,
       typeSel: 0, 
       title: '',
       place: '',
@@ -37,8 +37,8 @@ export default class Create extends Component {
       startTimeSel: time,
       endDateSel: date,
       endTimeSel: time,
-      deadlineDateSel: minDate,
-      deadlineTimeSel: minTime,
+      deadlineDateSel: maxDate,
+      deadlineTimeSel: maxTime,
       wxNum: '',
       remark: ''
     }
@@ -75,37 +75,37 @@ export default class Create extends Component {
     })
   }
   onStartDateChange = e => {
-    var minDeadline = new Date(this.computeDeadlineScope(getTimeInMills(e.detail.value, this.state.startTimeSel)))
-    var minDate = formatDate(minDeadline)
-    var minTime = formatTime(minDeadline)
+    var maxDeadline = new Date(this.computeDeadlineScope(getTimeInMills(e.detail.value, this.state.startTimeSel)))
+    var maxDate = formatDate(maxDeadline)
+    var maxTime = formatTime(maxDeadline)
     var currentDeadlineDate = this.state.deadlineDateSel
     var currentDeadlineTime = this.state.deadlineTimeSel
-    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) < minDeadline) {
-      currentDeadlineDate = minDate
-      currentDeadlineTime = minTime
+    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) < maxDeadline) {
+      currentDeadlineDate = maxDate
+      currentDeadlineTime = maxTime
     }
     this.setState({
       startDateSel: e.detail.value, 
-      minDeadlineDate: minDate, 
-      minDeadlineTime: minTime,
+      maxDeadlineDate: maxDate, 
+      maxDeadlineTime: maxTime,
       deadlineDateSel: currentDeadlineDate, 
       deadlineTimeSel: currentDeadlineTime
     })
   }
   onStartTimeChange = e => {
-    var minDeadline = new Date(this.computeDeadlineScope(getTimeInMills(this.state.startDateSel, e.detail.value)))
-    var minDate = formatDate(minDeadline)
-    var minTime = formatTime(minDeadline)
+    var maxDeadline = new Date(this.computeDeadlineScope(getTimeInMills(this.state.startDateSel, e.detail.value)))
+    var maxDate = formatDate(maxDeadline)
+    var maxTime = formatTime(maxDeadline)
     var currentDeadlineDate = this.state.deadlineDateSel
     var currentDeadlineTime = this.state.deadlineTimeSel
-    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) < minDeadline) {
-      currentDeadlineDate = minDate
-      currentDeadlineTime = minTime
+    if (getTimeInMills(currentDeadlineDate, currentDeadlineTime) > maxDeadline) {
+      currentDeadlineDate = maxDate
+      currentDeadlineTime = maxTime
     }
     this.setState({
       startTimeSel: e.detail.value, 
-      minDeadlineDate: minDate,
-      minDeadlineTime: minTime, 
+      maxDeadlineDate: maxDate,
+      maxDeadlineTime: maxTime, 
       deadlineDateSel: currentDeadlineDate,
       deadlineTimeSel: currentDeadlineTime
     })
@@ -200,21 +200,36 @@ export default class Create extends Component {
     if (!this.checkParams()) {
       return;
     }
-    post("/event/save", true, {
-        title: this.state.title,
-        destination: this.state.place,
-        maxUserNum: this.state.maxPeople,
-        minUserNum: this.state.minPeople,
-        startTime: getTimeInMills(this.state.startDateSel, this.state.startTimeSel),
-        endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
-        registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
-        remarks: this.state.remark,
-        type: this.state.typeSel, 
-        scope: this.state.scopeSel
-    }).then((result) => {
-        console.log("publish success: " + result)
-    }).catch((error) => {
-        console.error("publish error: " + error)
+    Taro.showModal({
+      content: "确认提交？"
+    }).then((res) => {
+      if (res.confirm) {
+        post("/event/save", true, {
+          title: this.state.title,
+          destination: this.state.place,
+          maxUserNum: this.state.maxPeople,
+          minUserNum: this.state.minPeople,
+          startTime: getTimeInMills(this.state.startDateSel, this.state.startTimeSel),
+          endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
+          registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
+          remarks: this.state.remark,
+          type: this.state.typeSel,
+          scope: this.state.scopeSel
+        }).then((result) => {
+          console.log("publish success: " + result)
+          Taro.showToast({
+            title: "发布成功！",
+            icon: "none"
+          })
+          Taro.navigateBack()
+        }).catch((error) => {
+          console.error("publish error: " + error)
+          Taro.showToast({
+            title: "发布失败：" + error,
+            icon: "none"
+          })
+        })
+      }
     })
   }
 
@@ -225,12 +240,14 @@ export default class Create extends Component {
       errorMsg = '标题是必填项！'
     } else if (this.state.place == '') {
       errorMsg = '地点是必填项！'
-    } else if (this.state.maxPeople < this.state.minPeople) {
+    } else if (parseInt(this.state.maxPeople) < parseInt(this.state.minPeople)) {
       errorMsg = '最高人数不能低于最低人数！'
     } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) - getCurrentTimeInMills() < 60 * 60 * 1000) {
       errorMsg = '开始时间至少要比当前时间晚一个小时！'
-    } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) > getTimeInMills(this.state.endDateSel, this.state.endTimeSel)) {
+    } else if (getTimeInMills(this.state.startDateSel, this.state.startTimeSel) - getTimeInMills(this.state.endDateSel, this.state.endTimeSel) > 0) {
       errorMsg = '结束时间不能早于开始时间！'
+    } else if (getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel) < getCurrentTimeInMills()) {
+      errorMsg = '报名截止时间不能早于当前时间！'
     } else if (this.state.wxNum == '') {
       errorMsg = '微信号是必填项！'
     } else {
@@ -342,7 +359,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>最低人数</Text>
                     <AtInputNumber className='event-prop-value'
                         value={this.state.minPeople}
-                        min={0}
+                        min={1}
                         max={100}
                         step={1}
                         onChange={this.onMinChange.bind(this)}/>
@@ -352,7 +369,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>最高人数</Text>
                     <AtInputNumber className='event-prop-value'
                         value={this.state.maxPeople}
-                        min={0}
+                        min={1}
                         max={100}
                         step={1}
                         onChange={this.onMaxChange.bind(this)}/>
@@ -402,7 +419,7 @@ export default class Create extends Component {
                     <Text className='event-prop-key'>报名截止时间</Text>
                     <Picker className='event-prop-value'
                         mode='date' 
-                        start={this.state.minDeadlineDate}
+                        end={this.state.maxDeadlineDate}
                         value={this.state.deadlineDateSel}
                         onChange={this.onDeadlineDateChange}>
                         <View className='picker'>
@@ -411,7 +428,7 @@ export default class Create extends Component {
                     </Picker>
                     <Picker className='event-prop-value'
                         mode='time' 
-                        start={this.state.minDeadlineTime}
+                        end={this.state.maxDeadlineTime}
                         value={this.state.deadlineTimeSel}
                         onChange={this.onDeadlineTimeChange}>
                         <View className='picker'>
