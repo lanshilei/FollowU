@@ -1,48 +1,40 @@
 import Taro, { Component } from '@tarojs/taro';
-import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  Swiper,
-  SwiperItem,
-  Picker,
-} from '@tarojs/components';
+import { View, Text, ScrollView, Swiper, SwiperItem } from '@tarojs/components';
 import { AtFab } from 'taro-ui';
+import { EventList } from '../../components/eventList'
+import { get } from '../../http/api';
 import './square.scss';
 
-const labelText = [
-  '全部',
-  '学习',
-  '运动',
-  '游玩',
-  '约饭',
-  '桌游',
-  '蹦迪',
-  '聊天',
-];
 export default class Square extends Component {
-  static externalClasses = ['square', 'title-text'];
 
   config = {
     navigationBarTitleText: '广场',
   };
 
-  static options = {
-    addGlobalClass: true,
-  };
-
-  state = {
-    checkLabel: 0,
-    selectArea: ['大连理工', '大连地区', '北京地区'],
-    areaChecked: '大连理工',
-    selectAttention: ['全部', '只看关注', '只看男生', '只看女生'],
-    attentionChecked: '全部',
-  };
-
+  constructor() {
+    super(...arguments)
+    this.state = {
+      checkLabel: 0, 
+      typeSelector: ['全部', '休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
+      eventList: []
+    }
+  }
+  
   componentWillMount() {}
 
-  componentDidMount() {}
+  componentDidMount() {
+    get("/event/query", false, {
+      pageNum: 1,
+      pageSize: 10
+    }).then((result) => {
+      console.log("getList success: " + JSON.stringify(result))
+      this.setState({
+        eventList: result.list
+      })
+    }).catch((error) => {
+      console.log("getList error: " + error)
+    })
+  }
 
   componentWillUnmount() {}
 
@@ -58,20 +50,14 @@ export default class Square extends Component {
     console.log(e.detail);
   }
 
-  onAreaChange = e => {
-    this.setState({
-      areaChecked: this.state.selectArea[e.detail.value],
-    });
-  };
-
-  onAttentionChange = e => {
-    this.setState({
-      attentionChecked: this.state.selectAttention[e.detail.value],
+  onCreateClick = e => {
+    Taro.navigateTo({
+      url: '/pages/create/create',
     });
   }
 
   render() {
-    const textViews = labelText.map((item, i) => {
+    const textViews = this.state.typeSelector.map((item, i) => {
       if (i === this.state.checkLabel) {
         return (
           <Text key={i} className="title-text-checked">
@@ -90,12 +76,7 @@ export default class Square extends Component {
       <View className="square">
         <View className="float-view">
           <AtFab
-            onClick={() => {
-              Taro.navigateTo({
-                url: '/pages/create/create',
-              });
-            }}
-          >
+            onClick={this.onCreateClick.bind()}>
             <Text className="at-fab__icon at-icon at-icon-add" />
           </AtFab>
         </View>
@@ -138,123 +119,16 @@ export default class Square extends Component {
           </SwiperItem>
         </Swiper>
 
-        <View className="picker-view">
-          <Picker
-            mode="selector"
-            range={this.state.selectArea}
-            onChange={this.onAreaChange}
-          >
-            <View className="square-picker">
-              地区：{this.state.areaChecked}
-            </View>
-          </Picker>
-
-          <Picker
-            mode="selector"
-            range={this.state.selectAttention}
-            onChange={this.onAttentionChange}
-          >
-            <View className="square-picker">
-              关注：{this.state.attentionChecked}
-            </View>
-          </Picker>
-        </View>
-
         <ScrollView
           className="scrollTitle"
           scrollX
           scrollWithAnimation
           onScrollToUpper={this.onScrollToUpper}
-          onScroll={this.onScroll}
-        >
+          onScroll={this.onScroll} >
           {textViews}
         </ScrollView>
-        <ScrollView className="scrollContent">
-          <View className="item-view">
-            <View className="item-view-left">
-              <Text className="item-view-title">
-                周六有没有人约篮球啊！10人体育馆！速来！
-              </Text>
-              <Text className="item-view-subTitle">
-                软件 兰石磊发布于54分钟前
-              </Text>
-            </View>
-            <View className="item-view-right">
-              <Image
-                className="item-view-image"
-                src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-              />
-            </View>
-          </View>
-
-          <View className="item-view">
-            <View className="item-view-left">
-              <Text className="item-view-title">
-                周六有没有人约篮球啊！10人体育馆！速来！
-              </Text>
-              <Text className="item-view-subTitle">
-                软件 兰石磊发布于54分钟前
-              </Text>
-            </View>
-            <View className="item-view-right">
-              <Image
-                className="item-view-image"
-                src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-              />
-            </View>
-          </View>
-
-          <View className="item-view">
-            <View className="item-view-left">
-              <Text className="item-view-title">
-                周六有没有人约篮球啊！10人体育馆！速来！
-              </Text>
-              <Text className="item-view-subTitle">
-                软件 兰石磊发布于54分钟前
-              </Text>
-            </View>
-            <View className="item-view-right">
-              <Image
-                className="item-view-image"
-                src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-              />
-            </View>
-          </View>
-
-          <View className="item-view">
-            <View className="item-view-left">
-              <Text className="item-view-title">
-                周六有没有人约篮球啊！10人体育馆！速来！
-              </Text>
-              <Text className="item-view-subTitle">
-                软件 兰石磊发布于54分钟前
-              </Text>
-            </View>
-            <View className="item-view-right">
-              <Image
-                className="item-view-image"
-                src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-              />
-            </View>
-          </View>
-
-          <View className="item-view">
-            <View className="item-view-left">
-              <Text className="item-view-title">
-                周六有没有人约篮球啊！10人体育馆！速来！
-              </Text>
-              <Text className="item-view-subTitle">
-                软件 兰石磊发布于54分钟前
-              </Text>
-            </View>
-            <View className="item-view-right">
-              <Image
-                className="item-view-image"
-                src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-              />
-            </View>
-          </View>
-        </ScrollView>
+        
+        <EventList list={this.state.eventList}/>
       </View>
     );
   }

@@ -207,6 +207,8 @@ export default class Create extends Component {
         post("/event/save", true, {
           title: this.state.title,
           destination: this.state.place,
+          latitude: this.state.latitude,
+          longitude: this.state.longitude, 
           maxUserNum: this.state.maxPeople,
           minUserNum: this.state.minPeople,
           startTime: getTimeInMills(this.state.startDateSel, this.state.startTimeSel),
