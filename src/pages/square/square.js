@@ -15,7 +15,7 @@ export default class Square extends Component {
     super(...arguments)
     this.state = {
       checkLabel: 0, 
-      typeSelector: ['全部', '休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
+      typeSelector: ['全部', '学习', '运动', '游玩', '休闲', '交友', '社团', '其他'], 
       eventList: []
     }
   }
@@ -23,17 +23,7 @@ export default class Square extends Component {
   componentWillMount() {}
 
   componentDidMount() {
-    get("/event/query", false, {
-      pageNum: 1,
-      pageSize: 10
-    }).then((result) => {
-      console.log("getList success: " + JSON.stringify(result))
-      this.setState({
-        eventList: result.list
-      })
-    }).catch((error) => {
-      console.log("getList error: " + error)
-    })
+    this.loadData()
   }
 
   componentWillUnmount() {}
@@ -50,10 +40,34 @@ export default class Square extends Component {
     console.log(e.detail);
   }
 
+  onTypeChange = (index) => {
+    this.setState({
+      checkLabel: index
+    }, () => {
+        this.loadData()
+    })
+  }
+
   onCreateClick = e => {
     Taro.navigateTo({
       url: '/pages/create/create',
     });
+  }
+
+  loadData() {
+    console.log("loadData type: " + this.state.checkLabel)
+    get("/event/query", false, {
+      pageNum: 1,
+      pageSize: 10,
+      status: 0, 
+      type: this.state.checkLabel
+    }).then((result) => {
+      this.setState({
+        eventList: result.list
+      })
+    }).catch((error) => {
+      console.log("getList error: " + error)
+    })
   }
 
   render() {
@@ -66,7 +80,7 @@ export default class Square extends Component {
         );
       }
       return (
-        <Text key={i} className="title-text-uncheck">
+        <Text key={i} className="title-text-uncheck" onClick={this.onTypeChange.bind(this, i)}>
           {item}
         </Text>
       );

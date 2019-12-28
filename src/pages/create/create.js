@@ -21,7 +21,7 @@ export default class Create extends Component {
     let maxDate = formatDate(maxDeadline)
     let maxTime = formatTime(maxDeadline)
     this.state = {
-      typeSelector: ['休闲', '运动', '游玩', '学习', '交友', '社团', '其他'], 
+      typeSelector: ['学习', '运动', '游玩', '休闲', '交友', '社团', '其他'], 
       scopeSelector: ['全部可见', '仅同校可见', '除同校外可见'], 
       maxDeadlineDate: maxDate,
       maxDeadlineTime: maxTime,
@@ -215,7 +215,7 @@ export default class Create extends Component {
           endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
           registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
           remarks: this.state.remark,
-          type: this.state.typeSel,
+          type: this.state.typeSel + 1,
           scope: this.state.scopeSel
         }).then((result) => {
           console.log("publish success: " + result)
