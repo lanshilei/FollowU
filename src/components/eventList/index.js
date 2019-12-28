@@ -34,7 +34,7 @@ class EventList extends Component {
                       {item.title}
                     </Text>
                     <Text className="item-view-subTitle">
-                      {item.description}
+                      {item.remarks}
                     </Text>
                   </View>
                   <View className="item-view-right">

@@ -55,7 +55,6 @@ export default class Square extends Component {
   }
 
   loadData() {
-    console.log("loadData type: " + this.state.checkLabel)
     get("/event/query", false, {
       pageNum: 1,
       pageSize: 10,

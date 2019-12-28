@@ -2,6 +2,7 @@ import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
 import { post } from '../../http/api'
+import { requestSubscribeMessage } from '../../utils/permission_util'
 import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/util'
 import './create.scss'
 
@@ -223,7 +224,9 @@ export default class Create extends Component {
             title: "发布成功！",
             icon: "none"
           })
-          Taro.navigateBack()
+          requestSubscribeMessage().then(() => {
+            Taro.navigateBack()
+          })
         }).catch((error) => {
           console.error("publish error: " + error)
           Taro.showToast({
