@@ -17,6 +17,7 @@ class App extends Component {
     pages: [
       'pages/square/square',
       'pages/personal/personal',
+      'pages/login/login',
       'pages/detail/detail',
       'pages/create/create'
     ],
