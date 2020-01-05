@@ -1,6 +1,6 @@
 import Taro, { Component } from '@tarojs/taro'
 import Index from './pages/index/index'
-import { login } from './http/api'
+import { authLogin } from './utils/auth'
 
 import 'taro-ui/dist/style/index.scss'
 import './app.scss'
@@ -52,7 +52,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    login()
+    authLogin()
   }
 
   componentDidShow () {}

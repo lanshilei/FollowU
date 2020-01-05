@@ -2,7 +2,7 @@ import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
 import { post } from '../../http/api'
-import { requestSubscribeMessage } from '../../utils/permission_util'
+import { authSubscribeMessage, authGetLocation } from '../../utils/auth'
 import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/util'
 import './create.scss'
 
@@ -142,42 +142,13 @@ export default class Create extends Component {
     })
   }
   onChooseLocation = e => {
-    Taro.getSetting().then((settings) => {
-      if (settings.authSetting['scope.userLocation'] == undefined) {
-        // 还未请求过授权，询问授权
-        Taro.authorize({
-          scope: 'scope.userLocation'
-        }).then(() => {
-          this.openMap()
-        }).catch(() => {
-          Taro.showToast({
-            title: '授权失败',
-            icon: 'none'
-          })
-        })
-      } else if (settings.authSetting['scope.userLocation'] == true) {
-        // 已经授权，打开地图
-        this.openMap()
-      } else if (settings.authSetting['scope.userLocation'] == false) {
-        // 已经拒绝授权，引导进入设置页
-        Taro.showModal({
-          title: '提示', 
-          content: '无法获取定位权限，请前往小程序设置界面授权定位服务'
-        }).then(call => {
-          if (call.confirm) {
-            Taro.openSetting().then(res => {
-              if (res.authSetting['scope.userLocation']) {
-                this.openMap()
-              } else {
-                Taro.showToast({
-                  title: '授权失败',
-                  icon: 'none'
-                })
-              }
-            }) 
-          }
-        })
-      }
+    authGetLocation().then(() => {
+      this.openMap()
+    }).catch(() => {
+      Taro.showToast({
+        title: '获取定位权限失败',
+        icon: 'none'
+      })
     })
   }
   openMap = () => {
@@ -224,7 +195,7 @@ export default class Create extends Component {
             title: "发布成功！",
             icon: "none"
           })
-          requestSubscribeMessage().then(() => {
+          authSubscribeMessage().then(() => {
             Taro.navigateBack()
           })
         }).catch((error) => {

@@ -45,23 +45,4 @@ const request = (params, method = 'GET') => {
     })
 }
 
-const login = () => {
-    //login成功后用微信返回的code换取token
-    wx.login({
-        success: function (res) {
-            if (res.code) {
-                get("/login/getToken", false, {
-                    code: res.code
-                }).then((result) => {
-                    setGlobalData(KEY_TOKEN, result)
-                }).catch((error) => {
-                    console.error('login failed: ' + error)
-                })
-            } else {
-                console.error(res.errMsg)
-            }
-        }
-    })
-}
-
-export { get, post, login }
+export { get, post }

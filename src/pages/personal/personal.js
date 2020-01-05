@@ -1,6 +1,6 @@
 import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
-import { getUserInfo } from '../../utils/auth'
+import { authGetUserInfo } from '../../utils/auth'
 import './personal.scss'
 
 export default class Personal extends Component {
@@ -37,7 +37,7 @@ export default class Personal extends Component {
   componentDidHide () { }
 
   fillUserInfo = e => {
-    getUserInfo().then((info) => {
+    authGetUserInfo().then((info) => {
       this.setState({
         userInfo: info.userInfo
       })
