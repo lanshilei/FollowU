@@ -2,7 +2,7 @@ import Taro, { Component } from '@tarojs/taro';
 import { View, Text, ScrollView, Swiper, SwiperItem } from '@tarojs/components';
 import { AtFab } from 'taro-ui';
 import { EventList } from '../../components/eventList'
-import { get } from '../../http/api';
+import { get } from '../../utils/request';
 import './square.scss';
 
 export default class Square extends Component {
@@ -121,7 +121,7 @@ export default class Square extends Component {
           <SwiperItem>
             <Image
               className="banner-image"
-              src="http://pic23.nipic.com/20120830/9686992_180336646144_2.jpg"
+              src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
             />
           </SwiperItem>
           <SwiperItem>

@@ -1,25 +1,50 @@
 import Taro from '@tarojs/taro'
-import { TEMPLATE_IDS, KEY_TOKEN, setGlobalData } from './global_data'
-import { get } from '../http/api'
+import { TEMPLATE_IDS, KEY_TOKEN } from './global_data'
+import { get } from './request'
 
 export function authLogin() {
-    Taro.checkSession().then(() => {
-        console.log("session not expired")
-    }).catch(() => {
-        // 登录状态过期，重新login成功后用微信返回的code换取token
-        Taro.login().then((res) => {
-            if (res.code) {
-                get("/login/getToken", false, {
-                    code: res.code
-                }).then((result) => {
-                    setGlobalData(KEY_TOKEN, result)
-                }).catch((error) => {
-                    console.error('login failed: ' + error)
-                })
-            } else {
-                console.error(res.errMsg)
-            }
+    return new Promise((resolve, reject) => {
+        checkToken().then(res => {
+            return resolve(res)
+        }).catch(() => {
+            // 登录状态过期，重新login成功后用微信返回的code换取token
+            Taro.login().then((res) => {
+                if (res.code) {
+                    // 这块needLogin必须是false，不然死循环
+                    get("/login/getToken", false, {
+                        code: res.code
+                    }).then((result) => {
+                        Taro.setStorage({ key: KEY_TOKEN, data: result })
+                        return resolve(result)
+                    }).catch((error) => {
+                        console.error('login failed: ' + error)
+                        return reject()
+                    })
+                } else {
+                    console.error(res.errMsg)
+                    return reject()
+                }
+            })
         })
+    })
+}
+
+function checkToken() {
+    return new Promise((resolve, reject) => {
+        Taro.getStorage({ key: KEY_TOKEN })
+            .then(res => {
+                if (res.data == undefined) {
+                    return reject()
+                } else {
+                    Taro.checkSession().then(() => {
+                        return resolve(res.data)
+                    }).catch(() => {
+                        return reject()
+                    })
+                }
+            }).catch(() => {
+                return reject()
+            })
     })
 }
 

@@ -1,9 +1,9 @@
 import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
-import { post } from '../../http/api'
+import { post } from '../../utils/request'
 import { authSubscribeMessage, authGetLocation } from '../../utils/auth'
-import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/util'
+import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/datetime'
 import './create.scss'
 
 export default class Create extends Component {
@@ -187,7 +187,7 @@ export default class Create extends Component {
           endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
           registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
           remarks: this.state.remark,
-          type: this.state.typeSel + 1,
+          type: Number(this.state.typeSel) + 1,
           scope: this.state.scopeSel
         }).then((result) => {
           console.log("publish success: " + result)
