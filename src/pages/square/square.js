@@ -69,6 +69,48 @@ export default class Square extends Component {
     })
   }
 
+  testData() {
+    this.setState({
+      eventList: [
+        {
+          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
+          place: '北京海淀区',
+          time: '2020.02.19'
+        },
+        {
+          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
+          place: '北京大学体育场',
+          time: '2020.02.19'
+        },
+        {
+          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
+          place: '北京大学体育场',
+          time: '2020.02.19'
+        },
+        {
+          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
+          place: '北京海淀区',
+          time: '2020.02.19'
+        },
+        {
+          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
+          place: '北京海淀区',
+          time: '2020.02.19'
+        },
+        {
+          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
+          place: '北京大学体育场',
+          time: '2020.02.19'
+        },
+        {
+          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
+          place: '北京大学体育场',
+          time: '2020.02.19'
+        },
+      ]
+    })
+  }
+
   render() {
     const textViews = this.state.typeSelector.map((item, i) => {
       if (i === this.state.checkLabel) {
@@ -93,16 +135,6 @@ export default class Square extends Component {
             <Text className="at-fab__icon at-icon at-icon-add" />
           </AtFab>
         </View>
-        <Text
-          className="title-text"
-          onClick={() => {
-            Taro.navigateTo({
-              url: '/pages/detail/detail',
-            });
-          }}
-        >
-          融资速递：WarDucks完成A轮融资
-        </Text>
         <Swiper
           className="swipe"
           indicatorColor="#999"
@@ -110,8 +142,7 @@ export default class Square extends Component {
           vertical={false}
           circular
           indicatorDots
-          autoplay
-        >
+          autoplay>
           <SwiperItem>
             <Image
               className="banner-image"

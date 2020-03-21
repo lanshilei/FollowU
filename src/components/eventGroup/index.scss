@@ -1,0 +1,13 @@
+.group-container {
+  width: 100%;
+  display: flex;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 24px;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+.item-layout {
+  flex: 1;
+  flex-direction: column;
+}
