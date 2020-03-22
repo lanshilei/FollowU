@@ -14,8 +14,11 @@ export default class Square extends Component {
   constructor() {
     super(...arguments)
     this.state = {
-      checkLabel: 0, 
-      typeSelector: ['全部', '学习', '运动', '游玩', '休闲', '交友', '社团', '其他'], 
+      bannerImages: ['https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1562484118033&di=7e601ab5a3512820ca111a4db9f2c95f&imgtype=0&src=http%3A%2F%2Fpic68.nipic.com%2Ffile%2F20150601%2F8164280_104301508000_2.jpg',
+        'http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg',
+        'http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg'], 
+      checkedScope: 0, 
+      scopeSelector: ['同城', '同行业', '同公司', '我的关注'], 
       eventList: []
     }
   }
@@ -40,9 +43,9 @@ export default class Square extends Component {
     console.log(e.detail);
   }
 
-  onTypeChange = (index) => {
+  onScopeChange = (index) => {
     this.setState({
-      checkLabel: index
+      checkedScope: index
     }, () => {
         this.loadData()
     })
@@ -59,7 +62,7 @@ export default class Square extends Component {
       pageNum: 1,
       pageSize: 10,
       status: 0, 
-      type: this.state.checkLabel
+      type: this.state.checkedScope
     }).then((result) => {
       this.setState({
         eventList: result.list
@@ -112,65 +115,57 @@ export default class Square extends Component {
   }
 
   render() {
-    const textViews = this.state.typeSelector.map((item, i) => {
-      if (i === this.state.checkLabel) {
+    const textViews = this.state.scopeSelector.map((item, i) => {
+      if (i === this.state.checkedScope) {
         return (
-          <Text key={i} className="title-text-checked">
+          <Text key={i} className="scope-text-checked">
             {item}
           </Text>
         );
       }
       return (
-        <Text key={i} className="title-text-uncheck" onClick={this.onTypeChange.bind(this, i)}>
+        <Text key={i} className="scope-text-uncheck" onClick={this.onScopeChange.bind(this, i)}>
           {item}
         </Text>
       );
     });
 
     return (
-      <View className="square">
+      <View className="square-container">
         <View className="float-view">
           <AtFab
             onClick={this.onCreateClick.bind()}>
             <Text className="at-fab__icon at-icon at-icon-add" />
           </AtFab>
         </View>
+
         <Swiper
           className="swipe"
           indicatorColor="#999"
           indicatorActiveColor="#333"
-          vertical={false}
           circular
           indicatorDots
           autoplay>
-          <SwiperItem>
-            <Image
-              className="banner-image"
-              src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1562484118033&di=7e601ab5a3512820ca111a4db9f2c95f&imgtype=0&src=http%3A%2F%2Fpic68.nipic.com%2Ffile%2F20150601%2F8164280_104301508000_2.jpg"
-            />
-          </SwiperItem>
-          <SwiperItem>
-            <Image
-              className="banner-image"
-              src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-            />
-          </SwiperItem>
-          <SwiperItem>
-            <Image
-              className="banner-image"
-              src="http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg"
-            />
-          </SwiperItem>
+          {this.state.bannerImages.map((item, i) => {
+            return (
+              <SwiperItem>
+                <View className='banner-image-container'>
+                  <Image
+                    key={i}
+                    src={item}
+                  />
+                </View>
+              </SwiperItem>
+            )
+          })}
         </Swiper>
 
-        <ScrollView
-          className="scrollTitle"
-          scrollX
-          scrollWithAnimation
-          onScrollToUpper={this.onScrollToUpper}
-          onScroll={this.onScroll} >
-          {textViews}
-        </ScrollView>
+        <View className='filter-layout'>
+          <View className='scope-layout'>
+            {textViews}
+          </View>
+          <Text className='filter-btn'>筛选</Text>
+        </View>
         
         <EventList list={this.state.eventList}/>
       </View>
