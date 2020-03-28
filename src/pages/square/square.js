@@ -57,6 +57,12 @@ export default class Square extends Component {
     });
   }
 
+  onFilterClick = e => {
+    Taro.navigateTo({
+      url: '/pages/filter/filter'
+    })
+  }
+
   loadData() {
     get("/event/query", false, {
       pageNum: 1,
@@ -148,10 +154,9 @@ export default class Square extends Component {
           autoplay>
           {this.state.bannerImages.map((item, i) => {
             return (
-              <SwiperItem>
+              <SwiperItem key={i}>
                 <View className='banner-image-container'>
                   <Image
-                    key={i}
                     src={item}
                   />
                 </View>
@@ -164,7 +169,8 @@ export default class Square extends Component {
           <View className='scope-layout'>
             {textViews}
           </View>
-          <Text className='filter-btn'>筛选</Text>
+          <Text className='filter-btn'
+            onClick={this.onFilterClick.bind(this)}>筛选</Text>
         </View>
         
         <EventList list={this.state.eventList}/>
