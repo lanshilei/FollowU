@@ -1,5 +1,5 @@
 import Taro, { Component } from '@tarojs/taro'
-import { View, Text } from '@tarojs/components'
+import { View, Text, Input } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
 import { post } from '../../utils/request'
 import { authSubscribeMessage, authGetLocation } from '../../utils/auth'
@@ -9,7 +9,7 @@ import './create.scss'
 export default class Create extends Component {
 
   config = {
-    navigationBarTitleText: '发起事件'
+    navigationBarTitleText: '活动发起'
   }
 
   constructor () {
@@ -22,57 +22,58 @@ export default class Create extends Component {
     let maxDate = formatDate(maxDeadline)
     let maxTime = formatTime(maxDeadline)
     this.state = {
-      typeSelector: ['学习', '运动', '游玩', '休闲', '交友', '社团', '其他'], 
-      scopeSelector: ['全部可见', '仅同校可见', '除同校外可见'], 
-      maxDeadlineDate: maxDate,
-      maxDeadlineTime: maxTime,
-      typeSel: 0, 
+      typeSelector: ['社交', '户外', '摄影', '宠物', '健康', '黑科技', '室内游戏',
+        '家庭亲子', '运动健身', '艺术文艺', '时尚美妆'], 
+      costSelector: ['免费', '付费', 'AA'], 
+      typeSel: -1, 
+      showTypeSelector: false, 
+      costSel: -1, 
+      showCostSelector: false, 
       title: '',
-      place: '',
-      latitude: -1, 
-      longitude: -1,
-      scopeSel: 0,
-      minPeople: 1, 
-      maxPeople: 1,
       startDateSel: date,
       startTimeSel: time,
       endDateSel: date,
       endTimeSel: time,
       deadlineDateSel: maxDate,
       deadlineTimeSel: maxTime,
+      maxDeadlineDate: maxDate,
+      maxDeadlineTime: maxTime,
+      place: '',
+      latitude: -1,
+      longitude: -1,
+      minPeople: 1, 
+      maxPeople: 1,
+      costValue: -1, 
       wxNum: '',
       remark: ''
     }
   }
 
-  onTitleChange = (value) => {
+  showTypeSelector = (e) => {
     this.setState({
-      title: value
+      showTypeSelector: !this.state.showTypeSelector
     })
   }
-  onPlaceChange = (value) => {
+  onTypeChange = (index) => {
     this.setState({
-      place: value
+      typeSel: index, 
+      showTypeSelector: false
     })
   }
-  onMinChange = (value) => {
+  showCostSelector = (e) => {
     this.setState({
-      minPeople: value
+      showCostSelector: !this.state.showCostSelector
     })
   }
-  onMaxChange = (value) => {
+  onCostChange = (index) => {
     this.setState({
-      maxPeople: value
+      costSel: index,
+      showCostSelector: false
     })
   }
-  onTypeChange = e => {
+  onTitleChange = e => {
     this.setState({
-      typeSel: e.detail.value
-    })
-  }
-  onScopeChange = e => {
-    this.setState({
-      scopeSel: e.detail.value
+      title: e.detail.value
     })
   }
   onStartDateChange = e => {
@@ -86,10 +87,10 @@ export default class Create extends Component {
       currentDeadlineTime = maxTime
     }
     this.setState({
-      startDateSel: e.detail.value, 
-      maxDeadlineDate: maxDate, 
+      startDateSel: e.detail.value,
+      maxDeadlineDate: maxDate,
       maxDeadlineTime: maxTime,
-      deadlineDateSel: currentDeadlineDate, 
+      deadlineDateSel: currentDeadlineDate,
       deadlineTimeSel: currentDeadlineTime
     })
   }
@@ -104,9 +105,9 @@ export default class Create extends Component {
       currentDeadlineTime = maxTime
     }
     this.setState({
-      startTimeSel: e.detail.value, 
+      startTimeSel: e.detail.value,
       maxDeadlineDate: maxDate,
-      maxDeadlineTime: maxTime, 
+      maxDeadlineTime: maxTime,
       deadlineDateSel: currentDeadlineDate,
       deadlineTimeSel: currentDeadlineTime
     })
@@ -131,16 +132,6 @@ export default class Create extends Component {
       deadlineTimeSel: e.detail.value
     })
   }
-  onWXNumChange = (value) => {
-    this.setState({
-      wxNum: value
-    })
-  }
-  onRemarkChange = (value) => {
-    this.setState({
-      remark: value
-    })
-  }
   onChooseLocation = e => {
     authGetLocation().then(() => {
       this.openMap()
@@ -151,6 +142,37 @@ export default class Create extends Component {
       })
     })
   }
+  onPlaceChange = (value) => {
+    this.setState({
+      place: value
+    })
+  }
+  onMinChange = (value) => {
+    this.setState({
+      minPeople: value
+    })
+  }
+  onMaxChange = (value) => {
+    this.setState({
+      maxPeople: value
+    })
+  }
+  onCostValueChange = (value) => {
+    this.setState({
+      costValue: value
+    })
+  }
+  onWXNumChange = (value) => {
+    this.setState({
+      wxNum: value
+    })
+  }
+  onRemarkChange = (value) => {
+    this.setState({
+      remark: value
+    })
+  }
+  
   openMap = () => {
     let params = {}
     if (this.state.latitude != -1 && this.state.longitude != -1) {
@@ -188,7 +210,8 @@ export default class Create extends Component {
           registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
           remarks: this.state.remark,
           type: Number(this.state.typeSel) + 1,
-          scope: this.state.scopeSel
+          costType: Number(this.state.costSel) + 1, 
+          costValue: this.state.costValue
         }).then((result) => {
           console.log("publish success: " + result)
           Taro.showToast({
@@ -224,6 +247,10 @@ export default class Create extends Component {
       errorMsg = '结束时间不能早于开始时间！'
     } else if (getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel) < getCurrentTimeInMills()) {
       errorMsg = '报名截止时间不能早于当前时间！'
+    } else if (Number(this.state.costSel) === -1) {
+      errorMsg = '请选择活动费用类型'
+    } else if (Number(this.state.costSel) !== 0 && Number(this.state.cost) === -1) {
+      errorMsg = '请输入活动费用金额'
     } else if (this.state.wxNum == '') {
       errorMsg = '微信号是必填项！'
     } else {
@@ -283,158 +310,249 @@ export default class Create extends Component {
 
   render () {
     return (
-        <View className='parent'> 
-            <Text className='title-text'>发起一个事件：</Text>
-            <View className='event-layout'>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>事件标签</Text>
-                    <Picker className='event-prop-value'
-                        mode='selector' 
-                        range={this.state.typeSelector}
-                        onChange={this.onTypeChange}>
-                        <View className='picker'>
-                            {this.state.typeSelector[this.state.typeSel]}
-                        </View>
-                    </Picker>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>标题</Text>
-                    <AtInput className='event-prop-value'
-                        border={false}
-                        maxLength='15' 
-                        placeholder='不超过15个字符'
-                        onChange={this.onTitleChange.bind(this)}/>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>活动地点</Text>
-                    <View onClick={this.onChooseLocation.bind(this)}>
-                      <AtInput className='event-prop-value'
-                        placeholder='请输入活动地点'
-                        border={false}
-                        editable={false}
-                        value={this.state.place}
-                        onChange={this.onPlaceChange.bind(this)}/>
-                    </View>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>可见范围</Text>
-                    <Picker className='event-prop-value'
-                        mode='selector' 
-                        range={this.state.scopeSelector}
-                        onChange={this.onScopeChange}>
-                        <View className='picker'>
-                            {this.state.scopeSelector[this.state.scopeSel]}
-                        </View>
-                    </Picker>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>最低人数</Text>
-                    <AtInputNumber className='event-prop-value'
-                        value={this.state.minPeople}
-                        min={1}
-                        max={100}
-                        step={1}
-                        onChange={this.onMinChange.bind(this)}/>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>最高人数</Text>
-                    <AtInputNumber className='event-prop-value'
-                        value={this.state.maxPeople}
-                        min={1}
-                        max={100}
-                        step={1}
-                        onChange={this.onMaxChange.bind(this)}/>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>活动开始时间</Text>
-                    <Picker className='event-prop-value'
-                        mode='date' 
-                        value={this.state.startDateSel}
-                        onChange={this.onStartDateChange}>
-                        <View className='picker'>
-                            {this.state.startDateSel}
-                        </View>
-                    </Picker>
-                    <Picker className='event-prop-value'
-                        mode='time' 
-                        value={this.state.startTimeSel}
-                        onChange={this.onStartTimeChange}>
-                        <View className='picker'>
-                            {this.state.startTimeSel}
-                        </View>
-                    </Picker>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>活动结束时间</Text>
-                    <Picker className='event-prop-value'
-                        mode='date' 
-                        value={this.state.endDateSel}
-                        onChange={this.onEndDateChange}>
-                        <View className='picker'>
-                            {this.state.endDateSel}
-                        </View>
-                    </Picker>
-                    <Picker className='event-prop-value'
-                        mode='time' 
-                        value={this.state.endTimeSel}
-                        onChange={this.onEndTimeChange}>
-                        <View className='picker'>
-                            {this.state.endTimeSel}
-                        </View>
-                    </Picker>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>报名截止时间</Text>
-                    <Picker className='event-prop-value'
-                        mode='date' 
-                        end={this.state.maxDeadlineDate}
-                        value={this.state.deadlineDateSel}
-                        onChange={this.onDeadlineDateChange}>
-                        <View className='picker'>
-                            {this.state.deadlineDateSel}
-                        </View>
-                    </Picker>
-                    <Picker className='event-prop-value'
-                        mode='time' 
-                        end={this.state.maxDeadlineTime}
-                        value={this.state.deadlineTimeSel}
-                        onChange={this.onDeadlineTimeChange}>
-                        <View className='picker'>
-                            {this.state.deadlineTimeSel}
-                        </View>
-                    </Picker>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>微信号</Text>
-                    <AtInput className='event-prop-value'
-                        border={false}
-                        placeholder='填写你的微信号'
-                        onChange={this.onWXNumChange.bind(this)}/>
-                </View>
-                <View className='prop-divide-line'/>
-                <View className='event-prop-layout'>
-                    <Text className='event-prop-key'>留言</Text>
-                    <AtInput className='event-prop-value'
-                        border={false}
-                        placeholder='请简短介绍这个事件来吸引大家参与吧'
-                        onChange={this.onRemarkChange.bind(this)}/>
-                </View>
-                <View className='prop-divide-line'/>
-
-                <AtButton className='btn_submit'
-                    type='primary'
-                    onClick={this.onSubmitForm.bind(this)}
-                >提交</AtButton>
+        <View className='event-container'> 
+          {/* ----- 活动类型 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>活动类型</Text>
+            <View className='event-prop-value'
+              onClick={this.showTypeSelector.bind(this)}>
+              <Input className='event-value-input' 
+                placeholder="选择活动类型"
+                placeholderStyle='color:#979d94'
+                disabled={true}
+                value={this.state.typeSelector[this.state.typeSel]}
+                onInput={this.onPlaceChange}>
+              </Input>
             </View>
+          </View>
+          <View>
+            {this.state.showTypeSelector 
+              ? <View className='at-row at-row--wrap'>
+                {this.state.typeSelector.map((item, i) => {
+                  if (i === this.state.typeSel) {
+                    return (
+                      <View className='at-col at-col-3' key={i}>
+                        <Text className='tag-selected'>{item}</Text>
+                      </View>
+                    );
+                  }
+                  return (
+                    <View className='at-col at-col-3' key={i}>
+                      <Text className='tag-unselected' onClick={this.onTypeChange.bind(this, i)}>{item}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              : <View/>
+            }
+          </View>
+          
+          {/* ----- 活动标题 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>活动标题</Text>
+            <View className='event-prop-value'>
+              <View className='title-input-layout'>
+                <Input className='event-value-input' 
+                  placeholder="请输入活动标题"
+                  placeholderStyle='color:#979d94'
+                  maxLength='20'
+                  onInput={this.onTitleChange}>
+                </Input>
+                <Text className='title-limit'>{this.state.title.length + "/20"}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* ----- 活动时间 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>活动开始时间</Text>
+            <View className='event-prop-value'>
+              <Picker className='date-value'
+                mode='date'
+                value={this.state.startDateSel}
+                onChange={this.onStartDateChange}>
+                <View className='picker'>
+                  {this.state.startDateSel}
+                </View>
+              </Picker>
+              <Picker className='time-value'
+                mode='time'
+                value={this.state.startTimeSel}
+                onChange={this.onStartTimeChange}>
+                <View className='picker'>
+                  {this.state.startTimeSel}
+                </View>
+              </Picker>
+            </View>
+          </View>
+
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>活动结束时间</Text>
+            <View className='event-prop-value'>
+              <Picker className='date-value'
+                mode='date'
+                value={this.state.endDateSel}
+                onChange={this.onEndDateChange}>
+                <View className='picker'>
+                  {this.state.endDateSel}
+                </View>
+              </Picker>
+              <Picker className='time-value'
+                mode='time'
+                value={this.state.endTimeSel}
+                onChange={this.onEndTimeChange}>
+                <View className='picker'>
+                  {this.state.endTimeSel}
+                </View>
+              </Picker>
+            </View>
+          </View>
+
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>报名截止时间</Text>
+            <View className='event-prop-value'>
+              <Picker className='date-value'
+                mode='date'
+                end={this.state.maxDeadlineDate}
+                value={this.state.deadlineDateSel}
+                onChange={this.onDeadlineDateChange}>
+                <View className='picker'>
+                  {this.state.deadlineDateSel}
+                </View>
+              </Picker>
+              <Picker className='time-value'
+                mode='time'
+                end={this.state.maxDeadlineTime}
+                value={this.state.deadlineTimeSel}
+                onChange={this.onDeadlineTimeChange}>
+                <View className='picker'>
+                  {this.state.deadlineTimeSel}
+                </View>
+              </Picker>
+            </View>
+          </View>
+
+          {/* ----- 活动地点 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>活动地点</Text>
+            <View className='event-prop-value'
+              onClick={this.onChooseLocation.bind(this)}>
+              <Input className='event-value-input' 
+                placeholder="请选择活动地点"
+                placeholderStyle='color:#979d94'
+                disabled={true}
+                value={this.state.place}
+                onInput={this.onPlaceChange}>
+              </Input>
+            </View>
+          </View>
+
+          {/* ----- 参与人数 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>最低参与人数</Text>
+            <View className='event-prop-value'>
+              <Input className='event-value-input' 
+                type="number"
+                placeholder="活动最低人数限制"
+                placeholderStyle='color:#979d94'
+                onInput={this.onMinChange}>
+              </Input>
+            </View>
+          </View>
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>最高参与人数</Text>
+            <View className='event-prop-value'>
+              <Input className='event-value-input' 
+                type="number"
+                placeholder="活动最高人数限制"
+                placeholderStyle='color:#979d94'
+                onInput={this.onMaxChange}>
+              </Input>
+            </View>
+          </View>
+
+          {/* ----- 费用类型 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>费用类型</Text>
+            <View className='event-prop-value'
+              onClick={this.showCostSelector.bind(this)}>
+              <Input className='event-value-input' 
+                placeholder="活动费用类型"
+                placeholderStyle='color:#979d94'
+                disabled={true}
+                value={this.state.costSelector[this.state.costSel]}
+                onInput={this.onPlaceChange}>
+              </Input>
+            </View>
+          </View>
+          <View>
+            {this.state.showCostSelector 
+              ? <View className='at-row at-row--wrap'>
+                {this.state.costSelector.map((item, i) => {
+                  if (i === this.state.costSel) {
+                    return (
+                      <View className='at-col at-col-3' key={i}>
+                        <Text className='tag-selected'>{item}</Text>
+                      </View>
+                    );
+                  }
+                  return (
+                    <View className='at-col at-col-3' key={i}>
+                      <Text className='tag-unselected' onClick={this.onCostChange.bind(this, i)}>{item}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+              : <View/>
+            }
+          </View>
+
+          {/* ----- 费用金额 ----- */}
+          <View>
+            {(this.state.costSel === -1 || this.state .costSel === 0)
+              ? <View/> 
+              : <View className='event-prop-layout'>
+                  <Text className='event-prop-key'>费用金额</Text>
+                  <View className='event-prop-value'>
+                    <Input className='event-value-input' 
+                      type="number"
+                      placeholder="活动费用金额"
+                      placeholderStyle='color:#979d94'
+                      onInput={this.onCostValueChange}>
+                    </Input>
+                  </View>
+                </View>
+            }
+          </View>
+
+          {/* ----- 微信号 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>微信号</Text>
+            <View className='event-prop-value'>
+              <Input className='tevent-value-input' 
+                type="number"
+                placeholder="请填写你的微信号"
+                placeholderStyle='color:#979d94'
+                onInput={this.onWXNumChange}>
+              </Input>
+            </View>
+          </View>
+
+          {/* ----- 留言 ----- */}
+          <View className='event-prop-layout'>
+            <Text className='event-prop-key'>留言</Text>
+            <View className='event-prop-value'>
+              <Input className='event-value-input' 
+                type="number"
+                placeholder="说点什么吧~"
+                placeholderStyle='color:#979d94'
+                maxLength='50'
+                onInput={this.onWXNumChange}>
+              </Input>
+            </View>
+          </View>
+
+          <Text className='btn-submit' onClick={this.onSubmitForm.bind(this)}>提交</Text>
         </View>
     )
   }
