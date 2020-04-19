@@ -17,8 +17,9 @@ class EventItem extends Component {
   };
 
   gotoDetail = e => {
-    // navigate to detail page
-    console.log("click detail")
+    Taro.navigateTo({
+      url: `/pages/detail/detail`
+    })
   }
 
   render() {
@@ -41,38 +42,5 @@ class EventItem extends Component {
         </Text>
       </View>
     )
-    // return type == 0 ? 
-    //   <View
-    //     className={'event-item-size1'}
-    //     onClick={this.gotoDetail}>
-    //     <Image
-    //       className={"item-view-image-size1"}
-    //       src={eventItem1} />
-    //     <Text className="item-view-title">
-    //       {data.title}
-    //     </Text>
-    //     <Text className="item-view-time">
-    //       {"活动时间：" + data.time}
-    //     </Text>
-    //     <Text className="item-view-place">
-    //       {data.place}
-    //     </Text>
-    //   </View> : 
-    //   <View
-    //     className='event-item-size2'
-    //     onClick={this.gotoDetail}>
-    //     <Image
-    //       className="item-view-image-size2"
-    //       src={eventItem2} />
-    //     <Text className="item-view-title">
-    //       {data.title}
-    //     </Text>
-    //     <Text className="item-view-time">
-    //       {"活动时间：" + data.time}
-    //     </Text>
-    //     <Text className="item-view-place">
-    //       {data.place}
-    //     </Text>
-    //   </View>
   }
 }
