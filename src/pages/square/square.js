@@ -4,6 +4,7 @@ import { AtFab } from 'taro-ui';
 import { EventList } from '../../components/eventList'
 import { get } from '../../utils/request';
 import './square.scss';
+import filter from '../filter/filter';
 
 export default class Square extends Component {
 
@@ -19,6 +20,7 @@ export default class Square extends Component {
         'http://www.dongao.com/upload/resources/image/2017/04/18/61906.jpg'], 
       checkedScope: 0, 
       scopeSelector: ['同城', '同行业', '同公司', '我的关注'], 
+      filters: {},
       eventList: []
     }
   }
@@ -26,12 +28,19 @@ export default class Square extends Component {
   componentWillMount() {}
 
   componentDidMount() {
-    this.loadData()
   }
 
   componentWillUnmount() {}
 
-  componentDidShow() {}
+  componentDidShow() {
+    let pages = getCurrentPages();
+    let currPage = pages[pages.length - 1];
+    this.setState({
+      filters: currPage.data.filters
+    }, () => {
+      this.loadData()
+    })
+  }
 
   componentDidHide() {}
 
@@ -64,12 +73,12 @@ export default class Square extends Component {
   }
 
   loadData() {
-    get("/event/query", false, {
-      pageNum: 1,
-      pageSize: 10,
-      status: 0, 
-      type: this.state.checkedScope
-    }).then((result) => {
+    let params = this.state.filters
+    params.pageNum = 1
+    params.pageSize = 10
+    params.state = 0
+    params.queryType = this.state.checkedScope
+    get("/event/query", true, params).then((result) => {
       this.setState({
         eventList: result.list
       })

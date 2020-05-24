@@ -6,7 +6,7 @@ const get = (url, needLogin, data = '') => {
     if (needLogin) {
         return requestWithToken(url, data, "GET")
     } else {
-        return requestWithoutToken(url, data, "POST")
+        return requestWithoutToken(url, data, "GET")
     }
 }
 
