@@ -73,18 +73,19 @@ export default class Square extends Component {
   }
 
   loadData() {
-    let params = this.state.filters
-    params.pageNum = 1
-    params.pageSize = 10
-    params.state = 0
-    params.queryType = this.state.checkedScope
-    get("/event/query", true, params).then((result) => {
-      this.setState({
-        eventList: result.list
-      })
-    }).catch((error) => {
-      console.log("getList error: " + error)
-    })
+    this.testData()
+    // let params = this.state.filters
+    // params.pageNum = 1
+    // params.pageSize = 10
+    // params.state = 0
+    // params.queryType = this.state.checkedScope
+    // get("/event/query", true, params).then((result) => {
+    //   this.setState({
+    //     eventList: result.list
+    //   })
+    // }).catch((error) => {
+    //   console.log("getList error: " + error)
+    // })
   }
 
   testData() {
@@ -131,7 +132,10 @@ export default class Square extends Component {
 
   render() {
     const textViews = this.state.scopeSelector.map((item, i) => {
-      if (i === this.state.checkedScope) {
+      // 暂时去掉 同行业 同专业
+      if (i === 1 || i === 2) {
+        return (<Text key={i}></Text>);
+      } else if (i === this.state.checkedScope) {
         return (
           <Text key={i} className="scope-text-checked">
             {item}
