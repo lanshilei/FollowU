@@ -1,9 +1,10 @@
 import Taro, { Component } from '@tarojs/taro'
 import { View, Text, Input } from '@tarojs/components'
 import { AtInput, AtInputNumber, AtButton } from 'taro-ui'
-import { post } from '../../utils/request'
+import { post, upload } from '../../utils/request'
 import { authSubscribeMessage, authGetLocation } from '../../utils/auth'
 import { formatDate, formatTime, getTimeInMills, getCurrentTimeInMills } from '../../utils/datetime'
+import uploadIcon from '../../images/upload_image.jpg'
 import './create.scss'
 
 export default class Create extends Component {
@@ -22,6 +23,7 @@ export default class Create extends Component {
     let maxDate = formatDate(maxDeadline)
     let maxTime = formatTime(maxDeadline)
     this.state = {
+      eventImage: '',
       typeSelector: ['社交', '户外', '摄影', '宠物', '健康', '黑科技', '室内游戏',
         '家庭亲子', '运动健身', '艺术文艺', '时尚美妆'], 
       costSelector: ['免费', '付费', 'AA'], 
@@ -147,29 +149,29 @@ export default class Create extends Component {
       place: value
     })
   }
-  onMinChange = (value) => {
+  onMinChange = (e) => {
     this.setState({
-      minPeople: value
+      minPeople: e.detail.value
     })
   }
-  onMaxChange = (value) => {
+  onMaxChange = (e) => {
     this.setState({
-      maxPeople: value
+      maxPeople: e.detail.value
     })
   }
-  onCostValueChange = (value) => {
+  onCostValueChange = (e) => {
     this.setState({
-      costValue: value
+      costValue: e.detail.value
     })
   }
-  onWXNumChange = (value) => {
+  onWXNumChange = (e) => {
     this.setState({
-      wxNum: value
+      wxNum: e.detail.value
     })
   }
-  onRemarkChange = (value) => {
+  onRemarkChange = (e) => {
     this.setState({
-      remark: value
+      remark: e.detail.value
     })
   }
   
@@ -190,6 +192,28 @@ export default class Create extends Component {
     })
   }
 
+  onUploadImage = e => {
+    let promise = new Promise((resolve, reject) => {
+      Taro.chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
+        success: function (res) {
+          var tempFilePaths = res.tempFilePaths
+          upload('/event/uploadImg', tempFilePaths[0])
+            .then((imgUrl) => {
+              return resolve(imgUrl)
+            })
+        }
+      })
+    })
+    promise.then((url) => {
+      this.setState({
+        eventImage: url
+      })
+    })
+  }
+
   onSubmitForm = e => {
     if (!this.checkParams()) {
       return;
@@ -199,19 +223,21 @@ export default class Create extends Component {
     }).then((res) => {
       if (res.confirm) {
         post("/event/save", true, {
+          imgUrl: this.state.eventImage, 
           title: this.state.title,
           destination: this.state.place,
           latitude: this.state.latitude,
           longitude: this.state.longitude, 
-          maxUserNum: this.state.maxPeople,
-          minUserNum: this.state.minPeople,
+          maxUserNum: Number(this.state.maxPeople),
+          minUserNum: Number(this.state.minPeople),
           startTime: getTimeInMills(this.state.startDateSel, this.state.startTimeSel),
           endTime: getTimeInMills(this.state.endDateSel, this.state.endTimeSel),
           registrationDeadline: getTimeInMills(this.state.deadlineDateSel, this.state.deadlineTimeSel),
           remarks: this.state.remark,
-          type: Number(this.state.typeSel) + 1,
-          costType: Number(this.state.costSel) + 1, 
-          costValue: this.state.costValue
+          eventType: Number(this.state.typeSel) + 1,
+          feeType: Number(this.state.costSel) + 1, 
+          fee: this.state.costValue, 
+          weChatNumber: this.state.wxNum
         }).then((result) => {
           console.log("publish success: " + result)
           Taro.showToast({
@@ -310,7 +336,15 @@ export default class Create extends Component {
 
   render () {
     return (
-        <View className='event-container'> 
+        <View className='event-container'>
+          <View className="event-img-layout">
+            <Text className="event-img-key">为您的活动配一张图</Text>
+            {
+              this.state.eventImage === '' ?
+                <Image className='event-image-value' src={uploadIcon} onClick={this.onUploadImage.bind(this)}/> :
+                <Image className='event-image-value' src={this.state.eventImage} />
+            }
+          </View>
           {/* ----- 活动类型 ----- */}
           <View className='event-prop-layout'>
             <Text className='event-prop-key'>活动类型</Text>
@@ -481,7 +515,7 @@ export default class Create extends Component {
                 placeholderStyle='color:#979d94'
                 disabled={true}
                 value={this.state.costSelector[this.state.costSel]}
-                onInput={this.onPlaceChange}>
+                onInput={this.onCostChange}>
               </Input>
             </View>
           </View>
@@ -547,7 +581,7 @@ export default class Create extends Component {
                 placeholder="说点什么吧~"
                 placeholderStyle='color:#979d94'
                 maxLength='50'
-                onInput={this.onWXNumChange}>
+                onInput={this.onRemarkChange}>
               </Input>
             </View>
           </View>

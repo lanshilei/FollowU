@@ -11,11 +11,46 @@ const get = (url, needLogin, data = '') => {
 }
 
 const post = (url, needLogin, data) => {
+    console.log(data)
     if (needLogin) {
         return requestWithToken(url, data, "POST")
     } else {
         return requestWithoutToken(url, data, "POST")
     }
+}
+
+const upload = (url, filePath) => {
+    return new Promise((resolve, reject) => {
+        authLogin().then(token => {
+            let header = { 'content-type': 'multipart/form-data', 'authorization': token }
+            Taro.uploadFile({
+                url: BASE_URL + '/event/uploadImg',
+                filePath: filePath,
+                header: header, 
+                name: 'file',
+                success(res) {
+                    const { statusCode, data } = res
+                    if (statusCode === 200) {
+                        console.log("request success: " + statusCode + " " + data)
+                        let dataJSON = JSON.parse(data)
+                        if (dataJSON.code === '0') {
+                            return resolve(dataJSON.result)
+                        } else {
+                            //TODO 处理服务器内部错误码 100->授权过期
+                            throw new Error(dataJSON.code)
+                        }
+                    } else {
+                        throw new Error(statusCode)
+                    }
+                }
+            })
+        }).catch(() => {
+            Taro.showToast({
+                title: '登录失败，请重试！',
+                icon: 'none'
+            })
+        })
+    })
 }
 
 const requestWithToken = (url, data, method) => {
@@ -67,4 +102,4 @@ const request = (params, header, method) => {
     })
 }
 
-export { get, post }
+export { get, post, upload }
