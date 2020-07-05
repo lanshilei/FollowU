@@ -58,7 +58,7 @@ const request = (params, header, method) => {
             if (data.code === '0') {
                 return data.result
             } else {
-                //TODO 处理服务器内部错误码
+                //TODO 处理服务器内部错误码 100->授权过期
                 throw new Error(data.code)
             }
         } else {
