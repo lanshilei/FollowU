@@ -53,7 +53,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    authLogin()
+    // authLogin()
   }
 
   componentDidShow () {}

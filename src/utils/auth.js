@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro'
-import { TEMPLATE_IDS, KEY_TOKEN } from './global_data'
+import { TEMPLATE_IDS, KEY_TOKEN, KEY_USERID } from './global_data'
 import { get } from './request'
 
 export function authLogin() {
@@ -14,8 +14,9 @@ export function authLogin() {
                     get("/login/getToken", false, {
                         code: res.code
                     }).then((result) => {
-                        Taro.setStorage({ key: KEY_TOKEN, data: result })
-                        return resolve(result)
+                        Taro.setStorage({ key: KEY_TOKEN, data: result.token })
+                        Taro.setStorage({ key: KEY_USERID, data: result.userId })
+                        return resolve(result.token)
                     }).catch((error) => {
                         console.error('login failed: ' + error)
                         return reject()
@@ -33,7 +34,7 @@ function checkToken() {
     return new Promise((resolve, reject) => {
         Taro.getStorage({ key: KEY_TOKEN })
             .then(res => {
-                if (res.data == undefined) {
+                if (res.data == undefined || res.data == '') {
                     return reject()
                 } else {
                     Taro.checkSession().then(() => {

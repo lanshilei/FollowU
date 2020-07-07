@@ -1,5 +1,5 @@
 import Taro from '@tarojs/taro'
-import { BASE_URL } from './global_data'
+import { BASE_URL, KEY_TOKEN } from './global_data'
 import { authLogin } from './auth'
 
 const get = (url, needLogin, data = '') => {
@@ -36,7 +36,6 @@ const upload = (url, filePath) => {
                         if (dataJSON.code === '0') {
                             return resolve(dataJSON.result)
                         } else {
-                            //TODO 处理服务器内部错误码 100->授权过期
                             throw new Error(dataJSON.code)
                         }
                     } else {
@@ -62,13 +61,20 @@ const requestWithToken = (url, data, method) => {
                 .then(res => {
                     return resolve(res)
                 }).catch(error => {
-                    return reject(error)
+                    if (error.message === '100') {
+                        Taro.setStorage({ key: KEY_TOKEN, data: '' }).then(() => {
+                            requestWithToken(url, data, method)
+                                .then((result) => {
+                                    return resolve(result)
+                                }).catch((error) => {
+                                    return reject(error)
+                                })
+                        }).catch(() => {
+                        })
+                    } else {
+                        return reject(error)
+                    }
                 })
-        }).catch(() => {
-            Taro.showToast({
-                title: '登录失败，请重试！', 
-                icon: 'none'
-            })
         })
     })
 }
@@ -93,7 +99,6 @@ const request = (params, header, method) => {
             if (data.code === '0') {
                 return data.result
             } else {
-                //TODO 处理服务器内部错误码 100->授权过期
                 throw new Error(data.code)
             }
         } else {
