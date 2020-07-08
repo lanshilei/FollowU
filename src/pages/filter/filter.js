@@ -126,6 +126,12 @@ export default class filter extends Component {
 
   getChosenFilters = () => {
     let result = {}
+    if (this.state.latitude != -1) {
+      result.lat = this.state.latitude
+    }
+    if (this.state.longitude != -1) {
+      result.lon = this.state.longitude
+    }
     if (this.state.checkedTime != 0) {
       result.dateType = this.state.timeReturnValue[this.state.checkedTime]
     }

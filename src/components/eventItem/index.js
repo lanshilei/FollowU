@@ -1,6 +1,7 @@
 import Taro, { Component } from '@tarojs/taro';
 import PropTypes from 'prop-types';
 import { View } from '@tarojs/components';
+import { formatDate, formatTime } from '../../utils/datetime'
 import eventItem1 from '../../images/eventItem1.jpg'
 import eventItem2 from '../../images/eventItem2.jpg'
 
@@ -30,15 +31,15 @@ class EventItem extends Component {
         onClick={this.gotoDetail}>
         <Image
           className={type == 0 ? 'item-view-image-size1' : 'item-view-image-size2'}
-          src={type == 0 ? eventItem1 : eventItem2} />
+          src={data.imgUrl} />
         <Text className="item-view-title">
           {data.title}
         </Text>
         <Text className="item-view-time">
-          {"活动时间：" + data.time}
+          {"活动时间：" + formatDate(new Date(data.startTime))}
         </Text>
         <Text className="item-view-place">
-          {data.place}
+          {data.destination}
         </Text>
       </View>
     )

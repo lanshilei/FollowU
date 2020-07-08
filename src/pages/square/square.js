@@ -2,7 +2,8 @@ import Taro, { Component } from '@tarojs/taro';
 import { View, Text, ScrollView, Swiper, SwiperItem } from '@tarojs/components';
 import { AtFab } from 'taro-ui';
 import { EventList } from '../../components/eventList'
-import { get } from '../../utils/request';
+import { get } from '../../utils/request'
+import { authGetLocation } from '../../utils/auth'
 import './square.scss';
 import filter from '../filter/filter';
 
@@ -28,6 +29,21 @@ export default class Square extends Component {
   componentWillMount() {}
 
   componentDidMount() {
+    authGetLocation().then(() => {
+      Taro.getLocation().then((result) => {
+        let filters = { lat: result.latitude, lon: result.longitude }
+        this.setState({
+          filters: filters
+        }, () => {
+          this.loadData()
+        })
+      })
+    }).catch(() => {
+      Taro.showToast({
+        title: '获取定位权限失败，无法获取活动信息',
+        icon: 'none'
+      })
+    })
   }
 
   componentWillUnmount() {}
@@ -35,10 +51,19 @@ export default class Square extends Component {
   componentDidShow() {
     let pages = getCurrentPages();
     let currPage = pages[pages.length - 1];
+    let passFilters = currPage.data.filters;
+    if (passFilters.lat === undefined) {
+      passFilters.lat = this.state.filters.lat;
+    }
+    if (passFilters.lon === undefined) {
+      passFilters.lon = this.state.filters.lon;
+    }
     this.setState({
-      filters: currPage.data.filters
+      filters: passFilters
     }, () => {
-      this.loadData()
+      if (this.state.filters.lat !== undefined && this.state.filters.lon !== undefined) {
+        this.loadData()
+      }
     })
   }
 
@@ -84,48 +109,6 @@ export default class Square extends Component {
       })
     }).catch((error) => {
       console.log("getList error: " + error)
-    })
-  }
-
-  testData() {
-    this.setState({
-      eventList: [
-        {
-          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
-          place: '北京海淀区',
-          time: '2020.02.19'
-        },
-        {
-          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
-          place: '北京大学体育场',
-          time: '2020.02.19'
-        },
-        {
-          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
-          place: '北京大学体育场',
-          time: '2020.02.19'
-        },
-        {
-          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
-          place: '北京海淀区',
-          time: '2020.02.19'
-        },
-        {
-          title: '周末单车活动，小伙伴们约起来啊，骑行绕五环一周，快快报名吧！',
-          place: '北京海淀区',
-          time: '2020.02.19'
-        },
-        {
-          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
-          place: '北京大学体育场',
-          time: '2020.02.19'
-        },
-        {
-          title: '周六有没有人约篮球，今年冬天最后一次活动，快快报名参加吧！',
-          place: '北京大学体育场',
-          time: '2020.02.19'
-        },
-      ]
     })
   }
 
