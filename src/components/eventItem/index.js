@@ -17,9 +17,9 @@ class EventItem extends Component {
     data: {},
   };
 
-  gotoDetail = e => {
+  gotoDetail = (id) => {
     Taro.navigateTo({
-      url: `/pages/detail/detail`
+      url: `/pages/detail/detail?id=` + id
     })
   }
 
@@ -28,7 +28,7 @@ class EventItem extends Component {
     return (
       <View
         className={type == 0 ? 'event-item-size1' : 'event-item-size2'}
-        onClick={this.gotoDetail}>
+        onClick={this.gotoDetail.bind(this, data.id)}>
         <Image
           className={type == 0 ? 'item-view-image-size1' : 'item-view-image-size2'}
           src={data.imgUrl} />
