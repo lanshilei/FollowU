@@ -1,0 +1,18 @@
+.personal-info {
+    width: 100%;
+    margin-top: 36px;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.personal-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+}
+.personal-name {
+    font-size: 32px;
+    color: #232c1a;
+    margin-left: 20px;
+}
