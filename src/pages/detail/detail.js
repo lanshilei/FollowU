@@ -1,9 +1,9 @@
 import Taro, { Component } from '@tarojs/taro'
 import { View, Text } from '@tarojs/components'
 import { AtGrid } from 'taro-ui'
-import { get } from '../../utils/request'
+import { get, post } from '../../utils/request'
 import { formatDate, formatTime } from '../../utils/datetime'
-import { KEY_USERID } from '../../utils/global_data'
+import { KEY_USER_ID, KEY_TOKEN, KEY_USERID } from '../../utils/global_data'
 import defaultAvatar from '../../images/logo.jpg'
 import './detail.scss'
 
@@ -18,6 +18,7 @@ export default class Detail extends Component {
     this.state = {
       eventId: -1, 
       currentUserId: -1,
+      currentIsParticipant: false, 
       detail: {}, 
       feeTypes: ['免费', '付费', 'AA'], 
       owner: {}, 
@@ -32,7 +33,7 @@ export default class Detail extends Component {
         currentUserId: res.data, 
         eventId: eventId
       }, () => {
-        this.loadData()
+        this.loadEvent()
       })
     })
   }
@@ -45,38 +46,62 @@ export default class Detail extends Component {
 
   componentDidHide () { }
 
-  loadData() {
-    console.log("loadData: eventId: " + this.state.eventId)
+  loadEvent() {
     get("/event/getByIds", true, { eventIds: this.state.eventId }).then((result) => {
       if (result.length == 1) {
-        let eventDetail = result[0]
-        get("/userAndEvent/query", true, { eventIds: this.state.eventId, types: '0,1,2'})
-          .then((result) => {
-            let owner = {}
-            for (let i = 0; i < result.length; i++) {
-              if (result[i].photo === null) {
-                result[i].photo = defaultAvatar
-              }
-              if (result[i].userId === this.state.currentUserId) {
-                owner = result[i]
-              }
-            }
-            this.setState({
-              detail: eventDetail, 
-              owner: owner, 
-              participants: result
-            })
-          })
+        this.setState({
+          detail: result[0]
+        })
+        this.loadParticipants()
       }
     }).catch((error) => {
       console.log("get event detail error: " + error)
     })
   }
+  
+  loadParticipants() {
+    get("/userAndEvent/query", true, { eventIds: this.state.eventId, types: '0,1,2' })
+      .then((result) => {
+        let owner = {}
+        let currentIsParticipant = false
+        for (let i = 0; i < result.length; i++) {
+          if (result[i].photo === null) {
+            result[i].photo = defaultAvatar
+          }
+          if (result[i].type === 0) {
+            owner = result[i]
+          }
+          if (result[i].userId === this.state.currentUserId) {
+            currentIsParticipant = true
+          }
+        }
+        this.setState({
+          owner: owner,
+          participants: result, 
+          currentIsParticipant: currentIsParticipant
+        })
+      })
+  }
 
   onJoinClick = () => {
-    Taro.showToast({
-      title: '对不起，你没有资格',
-      icon: 'none',
+    Taro.getStorage({ key: KEY_USERID }).then(res => {
+      post("/userAndEvent/deal", true, {
+        eventId: this.state.id,
+        userId: res.data,
+        op: 0
+      }).then((result) => {
+        Taro.showToast({
+          title: '恭喜报名成功!', 
+          icon: ''
+        })
+        this.loadParticipants()
+      })
+    }).catch((error) => {
+      console.log("join event error: " + error)
+      Taro.showToast({
+        title: '报名失败！', 
+        icon: 'none'
+      })
     })
   }
 
@@ -139,7 +164,7 @@ export default class Detail extends Component {
         </View>
 
         {
-          this.state.currentUserId === this.state.owner.userId ? 
+          currentIsParticipant ? 
           <View /> : 
           <Text className='btn-join' onClick={this.onJoinClick.bind(this)}>参与活动</Text>
         }
